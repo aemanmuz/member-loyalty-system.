@@ -1,0 +1,31 @@
+const express = require('express');
+const { Pool } = require('pg');
+const multer = require('multer');
+const xlsx = require('xlsx');
+
+const app = express();
+app.use(express.json());
+const upload = multer({ dest: 'uploads/' });
+
+const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+
+// 1. Manual Member Registration
+app.post('/api/members', async (req, res) => {
+  const { name, email, initial_points } = req.body;
+  const result = await pool.query(
+    'INSERT INTO members (name, email, current_points) VALUES ($1, $2, $3) RETURNING *',
+    [name, email, initial_points || 0]
+  );
+  res.json(result.rows[0]);
+});
+
+// 2. Registration Histogram Analytics API
+app.get('/api/analytics/registrations', async (req, res) => {
+  const result = await pool.query(`
+    SELECT DATE_TRUNC('month', created_at) AS period, COUNT(*) AS count
+    FROM members GROUP BY period ORDER BY period ASC
+  `);
+  res.json(result.rows);
+});
+
+app.listen(3000, () => console.log('Server running on port 3000'));
