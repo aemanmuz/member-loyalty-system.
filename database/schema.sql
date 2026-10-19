@@ -1,0 +1,15 @@
+CREATE TABLE members (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(255) NOT NULL,
+  email VARCHAR(255) UNIQUE NOT NULL,
+  current_points INT DEFAULT 0,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE points_ledger (
+  id SERIAL PRIMARY KEY,
+  member_id INT REFERENCES members(id) ON DELETE CASCADE,
+  point_delta INT NOT NULL,
+  reason VARCHAR(255),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
